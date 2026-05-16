@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meeting-to-Action Digest</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #151515;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #c8f135;
+    --accent2: #f1c435;
+    --accent3: #35c8f1;
+    --text: #f0ede8;
+    --muted: #7a7570;
+    --danger: #f14335;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,241,53,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,241,53,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    padding: 40px 0 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0d0d0d;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .logo-text span {
+    color: var(--accent);
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Hero */
+  .hero {
+    padding: 64px 0 48px;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::after {
+    content: '';
+    flex: 1;
+    max-width: 60px;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+  }
+
+  /* Flow indicator */
+  .flow-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 48px 0;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .flow-node {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .flow-node.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(200,241,53,0.06);
+  }
+
+  .flow-node.done {
+    border-color: #2d3a1a;
+    color: #6a8a30;
+    background: rgba(200,241,53,0.04);
+  }
+
+  .flow-arrow {
+    width: 32px;
+    height: 1px;
+    background: var(--border);
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .flow-arrow::after {
+    content: '›';
+    position: absolute;
+    right: -4px;
+    top: -9px;
+    color: var(--border);
+    font-size: 14px;
+  }
+
+  .flow-node-num {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .flow-node.active .flow-node-num {
+    background: var(--accent);
+    color: #0d0d0d;
+  }
+
+  .flow-node.done .flow-node-num {
+    background: #3a5a1a;
+    color: var(--accent);
+  }
+
+  /* Main layout */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    padding-bottom: 64px;
+  }
+
+  @media (max-width: 768px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Panels */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .panel-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+
+  .icon-input { background: rgba(53,200,241,0.12); }
+  .icon-action { background: rgba(200,241,53,0.12); }
+  .icon-summary { background: rgba(241,196,53,0.12); }
+  .icon-email { background: rgba(200,53,241,0.12); }
+
+  .panel-body {
+    padding: 20px;
+  }
+
+  /* Textarea */
+  .notes-textarea {
+    width: 100%;
+    min-height: 280px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.7;
+  }
+
+  .notes-textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .notes-textarea::placeholder {
+    color: var(--muted);
+  }
+
+  /* Config row */
+  .config-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .config-field {
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .config-label {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .config-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .config-input:focus {
+    border-color: var(--accent);
+  }
+
+  /* Run button */
+  .run-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px 24px;
+    background: var(--accent);
+    color: #0d0d0d;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .run-btn:hover:not(:disabled) {
+    background: #d4f54a;
+    transform: translateY(-1px);
+  }
+
+  .run-btn:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .run-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .run-btn svg {
+    flex-shrink: 0;
+  }
+
+  /* Output panels */
+  .output-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    min-height: 120px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+
+  .output-panel.streaming {
+    border-color: var(--accent);
+  }
+
+  .output-panel.done {
+    border-color: rgba(200,241,53,0.2);
+  }
+
+  .output-empty {
+    color: var(--muted);
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    font-size: 12px;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Right column panels */
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .right-col .panel { flex: 1; }
+
+  /* Spinner */
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(13,13,13,0.3);
+    border-top-color: #0d0d0d;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Progress bar */
+  .progress-track {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    margin: 0 20px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 1px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* Email section full width */
+  .full-panel {
+    grid-column: 1 / -1;
+  }
+
+  /* Action items styling */
+  .action-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+
+  .action-item:last-child { border-bottom: none; }
+
+  .action-num {
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding-top: 2px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    z-index: 1000;
+    transform: translateY(60px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Error state */
+  .error-box {
+    background: rgba(241,67,53,0.08);
+    border: 1px solid rgba(241,67,53,0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #f14335;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* Cursor blink */
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 13px;
+    background: var(--accent);
+    margin-left: 1px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(200,241,53,0.08);
+    border: 1px solid rgba(200,241,53,0.15);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: #8aaa30;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo">
+      <div class="logo-mark">M</div>
+      <div class="logo-text">Meeting<span>Digest</span></div>
+    </div>
+    <div class="status-pill">
+      <div class="dot"></div>
+      Groq · llama-3.3-70b
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Neuron Workflows Agent</div>
+    <h1>Meetings that<br><em>actually</em> lead somewhere</h1>
+    <p class="hero-sub">Paste raw meeting notes. Get structured action items, an executive summary, and a ready-to-send follow-up email — in one run.</p>
+  </div>
+
+  <!-- Flow bar -->
+  <div class="flow-bar" id="flowBar">
+    <div class="flow-node" id="fn1">
+      <div class="flow-node-num">1</div>
+      Accept notes
+    </div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node" id="fn2">
+      <div class="flow-node-num">2</div>
+      Extract actions
+    </div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node" id="fn3">
+      <div class="flow-node-num">3</div>
+      Summarise
+    </div>
+    <div class="flow-arrow"></div>
+    <div class="flow-node" id="fn4">
+      <div class="flow-node-num">4</div>
+      Draft email
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-track" id="progressTrack" style="display:none;">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="main-grid" style="margin-top:24px;">
+
+    <!-- Left: Input -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="panel-icon icon-input">📝</div>
+          Neuron 1 · Input
+        </div>
+        <span class="tag">GET · text</span>
+      </div>
+      <div class="panel-body">
+        <!-- Groq API Key -->
+        <div style="margin-bottom:14px;">
+          <div class="config-label" style="margin-bottom:6px;">🔑 Groq API Key <span style="color:var(--danger);font-size:10px;">required</span></div>
+          <div style="position:relative;">
+            <input class="config-input" type="password" id="groqApiKey"
+              placeholder="gsk_••••••••••••••••••••••••••••••••"
+              style="width:100%;padding-right:80px;">
+            <button onclick="toggleKey()" id="toggleKeyBtn"
+              style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;
+                     color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;padding:2px 6px;">
+              show
+            </button>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:5px;font-family:'DM Mono',monospace;">
+            Get a free key at <a href="https://console.groq.com/keys" target="_blank"
+              style="color:var(--accent3);text-decoration:none;">console.groq.com/keys</a>
+          </div>
+        </div>
+
+        <textarea class="notes-textarea" id="notesInput" placeholder="Paste your meeting notes here…
+
+Example:
+Date: May 15 2026
+Attendees: Priya (PM), Rohan (Eng), Sara (Design)
+
+- Discussed the new onboarding flow redesign
+- Sara to deliver wireframes by May 20
+- Rohan will set up staging environment this week
+- Agreed to push launch date to June 1
+- Priya to send updated roadmap to stakeholders by Friday
+- Need to decide on color palette before dev starts
+- Next sync scheduled for May 22"></textarea>
+
+        <div class="config-row">
+          <div class="config-field">
+            <div class="config-label">Meeting Host Name</div>
+            <input class="config-input" type="text" id="hostName" placeholder="e.g. Priya Sharma">
+          </div>
+          <div class="config-field">
+            <div class="config-label">Email Recipient (optional)</div>
+            <input class="config-input" type="email" id="emailRecipient" placeholder="team@company.com">
+          </div>
+        </div>
+
+        <button class="run-btn" id="runBtn" onclick="runAgent()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          Run Agent
+        </button>
+
+        <div class="error-box" id="errorBox"></div>
+      </div>
+    </div>
+
+    <!-- Right: Outputs -->
+    <div class="right-col">
+
+      <!-- Action Items -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-icon icon-action">⚡</div>
+            Neuron 2 · Action Items
+          </div>
+          <span class="tag">MAKE · list</span>
+        </div>
+        <div class="panel-body">
+          <div class="output-panel" id="actionsOutput">
+            <div class="output-empty">Run the agent to extract action items</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-icon icon-summary">📊</div>
+            Neuron 3 · Summary
+          </div>
+          <span class="tag">MAKE · digest</span>
+        </div>
+        <div class="panel-body">
+          <div class="output-panel" id="summaryOutput">
+            <div class="output-empty">Summary appears after action items</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Full width: Email Draft -->
+    <div class="panel full-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="panel-icon icon-email">✉️</div>
+          Neuron 4 · Follow-Up Email Draft
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span class="tag">SEND · email</span>
+          <button class="copy-btn" id="copyEmailBtn" onclick="copyEmail()" style="position:static;">Copy draft</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="output-panel" id="emailOutput" style="min-height:200px;">
+          <div class="output-empty">Email draft generated last — after all neurons complete</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied to clipboard ✓</div>
+
+<script>
+// ── Groq API config ──────────────────────────────────────────────
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const MODEL        = 'llama-3.3-70b-versatile';   // fast & capable Groq model
+// ─────────────────────────────────────────────────────────────────
+
+let isRunning = false;
+
+// ── helpers ───────────────────────────────────────────────────────
+function toggleKey() {
+  const inp = document.getElementById('groqApiKey');
+  const btn = document.getElementById('toggleKeyBtn');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'hide'; }
+  else { inp.type = 'password'; btn.textContent = 'show'; }
+}
+
+function getApiKey() {
+  return document.getElementById('groqApiKey').value.trim();
+}
+
+function setFlow(step) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('fn' + i);
+    el.classList.remove('active', 'done');
+    if (i < step) el.classList.add('done');
+    else if (i === step) el.classList.add('active');
+  }
+}
+
+function setProgress(pct) {
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function setOutput(id, text, streaming = false) {
+  const el = document.getElementById(id);
+  el.classList.remove('output-empty');
+  el.classList.toggle('streaming', streaming);
+  el.classList.toggle('done', !streaming && text.length > 0);
+  if (streaming) {
+    el.innerHTML = escapeHtml(text) + '<span class="cursor"></span>';
+  } else {
+    el.textContent = text;
+  }
+}
+
+function escapeHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function copyEmail() {
+  const text = document.getElementById('emailOutput').textContent;
+  if (text.includes('Email draft generated')) return;
+  navigator.clipboard.writeText(text).then(() => showToast('Email draft copied ✓'));
+}
+
+// ── Groq streaming call (OpenAI-compatible SSE) ───────────────────
+async function callGroqStreaming(systemPrompt, userContent, onChunk) {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error('Please enter your Groq API key first.');
+
+  const response = await fetch(GROQ_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 1024,
+      stream: true,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userContent  }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Groq API error: HTTP ${response.status}`);
+  }
+
+  const reader  = response.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText  = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value, { stream: true });
+    for (const line of chunk.split('\n')) {
+      if (!line.startsWith('data: ')) continue;
+      const raw = line.slice(6).trim();
+      if (raw === '[DONE]') continue;
+      try {
+        const parsed = JSON.parse(raw);
+        // OpenAI-compatible delta format
+        const delta = parsed?.choices?.[0]?.delta?.content || '';
+        if (delta) {
+          fullText += delta;
+          onChunk(fullText);
+        }
+      } catch {}
+    }
+  }
+
+  return fullText;
+}
+
+// ── Main agent runner ─────────────────────────────────────────────
+async function runAgent() {
+  if (isRunning) return;
+
+  const notes = document.getElementById('notesInput').value.trim();
+  if (!notes) { showError('Please paste your meeting notes first.'); return; }
+  if (!getApiKey()) { showError('Please enter your Groq API key.'); return; }
+
+  hideError();
+  isRunning = true;
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Running…';
+
+  document.getElementById('progressTrack').style.display = 'block';
+  setProgress(5);
+
+  ['actionsOutput','summaryOutput','emailOutput'].forEach(id => {
+    const el = document.getElementById(id);
+    el.innerHTML = '<div class="output-empty">Processing…</div>';
+    el.classList.remove('streaming','done');
+  });
+
+  try {
+    // ── NEURON 2: Extract action items ────────────────────────────
+    setFlow(2);
+    setProgress(15);
+    setOutput('actionsOutput', '', true);
+
+    const actionText = await callGroqStreaming(
+      `You are Neuron 2 of a Meeting-to-Action Digest agent. Your sole task: extract every action item from the meeting notes.
+
+Format each action item exactly like this:
+[N]. [Task description]
+   → Owner: [name or "Not specified"]
+   → Deadline: [date/timeframe or "Not specified"]
+
+Be thorough. Include every commitment, task, or next step mentioned. Output ONLY the numbered list, nothing else.`,
+      `Meeting notes:\n\n${notes}`,
+      (text) => setOutput('actionsOutput', text, true)
+    );
+
+    setOutput('actionsOutput', actionText, false);
+    setProgress(40);
+
+    // ── NEURON 3: Summarise ───────────────────────────────────────
+    setFlow(3);
+    setOutput('summaryOutput', '', true);
+
+    const summaryText = await callGroqStreaming(
+      `You are Neuron 3 of a Meeting-to-Action Digest agent. Write a 5-bullet executive summary of the meeting.
+
+Use exactly 5 bullets covering:
+• Key decisions made
+• Main topics discussed
+• Blockers or risks mentioned
+• Next steps / milestones
+• Overall meeting context (purpose + outcome in one line)
+
+Keep every bullet under 25 words. Start each bullet with •. Output ONLY the 5 bullets, nothing else.`,
+      `Meeting notes:\n\n${notes}\n\nAction items already extracted:\n\n${actionText}`,
+      (text) => setOutput('summaryOutput', text, true)
+    );
+
+    setOutput('summaryOutput', summaryText, false);
+    setProgress(70);
+
+    // ── NEURON 4: Draft follow-up email ───────────────────────────
+    setFlow(4);
+    setOutput('emailOutput', '', true);
+
+    const hostName = document.getElementById('hostName').value.trim() || 'the meeting host';
+
+    const emailText = await callGroqStreaming(
+      `You are Neuron 4 of a Meeting-to-Action Digest agent. Draft a professional follow-up email from the meeting host.
+
+Structure:
+Subject: [clear, specific subject line]
+
+Hi team,
+
+[1-sentence opening: what this meeting was about and when]
+
+Action Items:
+[numbered list of action items with owners and deadlines]
+
+Meeting Summary:
+[the 5-bullet summary]
+
+[Polite 1-sentence close about next sync or availability for questions]
+
+[Sign-off],
+${hostName}
+
+Rules:
+- Tone: direct, friendly, professional
+- No fluff or filler phrases
+- Output ONLY the email starting with Subject:`,
+      `Action items:\n${actionText}\n\nSummary:\n${summaryText}`,
+      (text) => setOutput('emailOutput', text, true)
+    );
+
+    setOutput('emailOutput', emailText, false);
+    setProgress(100);
+
+    setTimeout(() => {
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById('fn' + i);
+        el.classList.remove('active');
+        el.classList.add('done');
+      }
+    }, 100);
+
+    showToast('Agent complete ✓ All 4 neurons ran successfully');
+
+  } catch (err) {
+    showError(err.message || 'Something went wrong. Check your API key and connection.');
+    setFlow(1);
+    setProgress(0);
+  } finally {
+    isRunning = false;
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run Agent`;
+    setTimeout(() => {
+      document.getElementById('progressTrack').style.display = 'none';
+      setProgress(0);
+    }, 2000);
+  }
+}
+
+// Ctrl/Cmd + Enter shortcut
+document.getElementById('notesInput').addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runAgent();
+});
+</script>
+</body>
+</html>
